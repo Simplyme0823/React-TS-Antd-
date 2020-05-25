@@ -19,14 +19,19 @@ let reducers :ReducersMapObject<combinedState,any>={
     users,
     router:connectRouter(history)
 }
+
 /*
 export type CombinedState={
     [key in keyof typeof reducers]:ReturnType<typeof reducers[key]>
 }*/
 
+
+//reducer本质上就是收state和action来改变state的 所以返回的也是state
 let reducer :Reducer<combinedState, AnyAction> = combineReducers(reducers)
 
 export default reducer
+
+
 /**
  * reducers 为纯函数,接受 state和action两个参数 根据action返回新的state
  */

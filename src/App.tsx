@@ -5,7 +5,7 @@ import AuthHOC from './router/AuthHOC'
 import { Frame, Login, NotFounding } from './components'
 import './App.css'
 import { Router } from '../src/reducers/index'
-import { NOTFOUND } from 'dns'
+
 
 const menus = routerConfigMap.filter(route => route.isNav === true)
 

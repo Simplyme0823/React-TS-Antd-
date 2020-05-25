@@ -1,6 +1,7 @@
 import { actionTypes } from '../actions'
 
 import {AnyAction} from 'redux'
+
 /**
  * reducer是一个纯函数
  */

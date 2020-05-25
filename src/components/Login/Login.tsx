@@ -21,12 +21,17 @@ export interface LoginStateProps {
     login: (userid: any) => void
 }*/
 
-const mapState = (state: combinedState): usersActionState => {
+const mapStatetoProps = (state: combinedState): usersActionState => {
     //只取出与登录有关联的属性
     return state.users
 }
 
-type LoginProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatchToProps> & RouteComponentProps
+/* RouteComponentProps 前端路由信息
+    history: H.History<S>;
+    location: H.Location<S>;
+    match: match<Params>;
+    staticContext?: C;*/
+type LoginProps = ReturnType<typeof mapStatetoProps> & ReturnType<typeof mapDispatchToProps> & RouteComponentProps
 
 const layout = {
     wrapperCol: { span: 6 },
@@ -44,6 +49,7 @@ class Login extends Component<LoginProps, LoginStateProps>{
             userid: undefined,
             psd: undefined
         }
+        console.log(this)
         /**
          * 构造函数只运行一次
          */
@@ -67,8 +73,8 @@ class Login extends Component<LoginProps, LoginStateProps>{
 
     login() {
         const { userid } = this.state
-        this.props.login({ userid })
 
+        this.props.login({ userid })
     }
 
     enter(event: KeyboardEvent) {
@@ -77,12 +83,9 @@ class Login extends Component<LoginProps, LoginStateProps>{
 
     componentDidMount() {
 
-
-
     }
 
     render() {
-        console.log(this.props)
         return (
             this.props.isLogin ?
                 <Redirect to="/admin/clicklisten" />
@@ -133,5 +136,7 @@ class Login extends Component<LoginProps, LoginStateProps>{
     }
 }
 
-/**hoc */
-export default withRouter(connect(mapState, mapDispatchToProps)(Login))
+/**hoc
+ * mapStatetoProps 是把redux内部总
+ */
+export default withRouter(connect(mapStatetoProps, mapDispatchToProps)(Login))

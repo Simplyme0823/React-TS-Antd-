@@ -28,24 +28,8 @@ const loginFailed = () => {
     }
 }
 
-/**
- * dispatch会调用reducer函数
- * @param userInfo 
- */
-/*const login = (payload: any) => (dispatch: Dispatch) => {
-    dispatch(startLogin())
-    request(payload).then(res => {
-        console.log(res,'RES')
-        dispatch(loginSuccess(
-            res
-        ))
-    }).catch((err:any)=>{
-        console.log(err)
-        dispatch(loginFailed())
-    })
-}*/
 
-
+//{ login(payload:any)...略 } 属性会被传递到login组件的props属性中
 export const mapDispatchToProps=(dispatch:Dispatch)=>({
     login(payload:any){
         dispatch(startLogin())

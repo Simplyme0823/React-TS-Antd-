@@ -7,6 +7,7 @@ import store from './store';
 import App from './App'
 
 ReactDOM.render(
+    //将store传递给app组件
     <Provider store={store}>
         <App />
     </Provider>, document.querySelector('#root'));

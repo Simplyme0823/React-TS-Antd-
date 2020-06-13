@@ -5,17 +5,16 @@ import { FormInstance } from "antd/lib/form";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { noop } from "../../common/util/tool";
 import { mapDispatchToProps } from "../../actions/users";
-
 import { connect } from "react-redux";
 import { usersActionState } from "../../reducers/users";
 import { combinedState } from "../../reducers";
-
 /**
  * 接口继承，类继承，基类，静态方法，范型，private，protect，this，重载/重写，多态
  */
-export interface LoginStateProps {
+export interface RegisterStateProps {
   userid: number | undefined | string;
   psd: string | undefined | number;
+  confirm: string | undefined | number;
 }
 
 /*interface LoginProps extends RouteComponentProps, usersActionState {
@@ -32,7 +31,7 @@ const mapStatetoProps = (state: combinedState): usersActionState => {
     location: H.Location<S>;
     match: match<Params>;
     staticContext?: C;*/
-type LoginProps = ReturnType<typeof mapStatetoProps> &
+type RegisterProps = ReturnType<typeof mapStatetoProps> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps & { switchForm: any };
 
@@ -40,17 +39,18 @@ const layout = {
   wrapperCol: { span: 6 },
 };
 
-class Login extends Component<LoginProps, LoginStateProps> {
+class Register extends Component<RegisterProps, RegisterStateProps> {
   /**
    * es6内部为严格模式
    * @param props
    */
-  constructor(props: LoginProps) {
+  constructor(props: RegisterProps) {
     //调用父类构造函数
     super(props);
     this.state = {
       userid: undefined,
       psd: undefined,
+      confirm: undefined,
     };
     /**
      * 构造函数只运行一次
@@ -87,7 +87,7 @@ class Login extends Component<LoginProps, LoginStateProps> {
   }
 
   toggleForm = () => {
-    this.props.switchForm("register");
+    this.props.switchForm("login");
   };
 
   getCode() {}
@@ -99,7 +99,7 @@ class Login extends Component<LoginProps, LoginStateProps> {
         <Row>
           <Col span={12} offset={6}>
             <h1 style={{ textAlign: "center" }} onClick={this.toggleForm}>
-              Log in
+              Register
             </h1>
           </Col>
         </Row>
@@ -131,6 +131,20 @@ class Login extends Component<LoginProps, LoginStateProps> {
               <Input.Password
                 prefix={<LockOutlined />}
                 placeholder="password"
+                value={this.state.psd}
+                onChange={this.inputPwd}
+              ></Input.Password>
+            </Row>
+          </Form.Item>
+          <Form.Item
+            style={{ justifyContent: "center" }}
+            name="confirm"
+            rules={[{ required: true, message: "Please input your userid !" }]}
+          >
+            <Row>
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="确认密码"
                 value={this.state.psd}
                 onChange={this.inputPwd}
               ></Input.Password>
@@ -170,4 +184,6 @@ class Login extends Component<LoginProps, LoginStateProps> {
 /**hoc
  * mapStatetoProps 是把redux内部总
  */
-export default withRouter(connect(mapStatetoProps, mapDispatchToProps)(Login));
+export default withRouter(
+  connect(mapStatetoProps, mapDispatchToProps)(Register)
+);

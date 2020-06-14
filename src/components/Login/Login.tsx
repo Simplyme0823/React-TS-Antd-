@@ -1,14 +1,19 @@
 import React, { Component, ChangeEvent, KeyboardEvent } from "react";
 import { RouteComponentProps, withRouter, Redirect } from "react-router-dom";
-import { Form, Input, Button, Row, Col } from "antd";
+import { Form, Input, Button, Row, Col, message } from "antd";
 import { FormInstance } from "antd/lib/form";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LockOutlined,
+  PoweroffOutlined,
+} from "@ant-design/icons";
 import { noop } from "../../common/util/tool";
 import { mapDispatchToProps } from "../../actions/users";
 
 import { connect } from "react-redux";
 import { usersActionState } from "../../reducers/users";
 import { combinedState } from "../../reducers";
+import { GetCode } from "../../api/account";
 
 /**
  * 接口继承，类继承，基类，静态方法，范型，private，protect，this，重载/重写，多态
@@ -16,6 +21,9 @@ import { combinedState } from "../../reducers";
 export interface LoginStateProps {
   userid: number | undefined | string;
   psd: string | undefined | number;
+  code_button_disabled: boolean;
+  code_button_loading: boolean;
+  code_button_text: string;
 }
 
 /*interface LoginProps extends RouteComponentProps, usersActionState {
@@ -49,16 +57,16 @@ class Login extends Component<LoginProps, LoginStateProps> {
     //调用父类构造函数
     super(props);
     this.state = {
-      userid: undefined,
-      psd: undefined,
+      userid: "",
+      psd: "",
+      code_button_disabled: false,
+      code_button_loading: false,
+      code_button_text: "获取验证码",
     };
     /**
      * 构造函数只运行一次
      */
-    this.login = this.login.bind(this);
-    this.inputPwd = this.inputPwd.bind(this);
     this.inputUserid = this.inputUserid.bind(this);
-    this.enter = this.enter.bind(this);
     this.getCode = this.getCode.bind(this);
   }
 
@@ -90,8 +98,69 @@ class Login extends Component<LoginProps, LoginStateProps> {
     this.props.switchForm("register");
   };
 
-  getCode() {}
+  onFinish = (value: any) => {
+    this.props.login(value);
+  };
+
+  /**倒计时函数 */
+  countDown = () => {
+    //定时其
+    let timer = null as any;
+    //倒计时时间
+    let sec = 60;
+    //修改状态
+    this.setState({
+      code_button_loading: false,
+      code_button_disabled: true,
+      code_button_text: `${sec}S`,
+    });
+    // setIntervale\clearInterval 不间断定时器
+    //setTimeOut\clearTimeout 只执行一次
+    timer = setInterval(() => {
+      if (sec-- === 0) {
+        clearInterval(timer);
+        return false;
+      }
+      this.setState({
+        code_button_text: `${sec}S`,
+      });
+    }, 1000);
+  };
+  //获取验证码
+  getCode() {
+    if (!this.state.userid) {
+      message.error("请输入用户名");
+      return;
+    }
+    this.setState({
+      code_button_loading: true,
+      code_button_text: "发送中",
+    });
+    const requestData = {
+      username: this.state.userid,
+      module: "login",
+    };
+
+    GetCode(requestData)
+      .then((res) => {
+        //倒计时函数
+        this.countDown();
+      })
+      .catch((err) => {
+        this.setState({
+          code_button_loading: false,
+          code_button_text: "重新获取",
+        });
+      });
+  }
   render() {
+    const {
+      userid,
+      code_button_disabled,
+      code_button_loading,
+      code_button_text,
+    } = this.state;
+    const _this = this;
     return this.props.isLogin ? (
       <Redirect to="/admin/clicklisten" />
     ) : (
@@ -107,17 +176,32 @@ class Login extends Component<LoginProps, LoginStateProps> {
           onKeyUp={this.enter /**by value, by ref */}
           name="login"
           {...layout}
+          onFinish={this.onFinish}
         >
           <Form.Item
             style={{ justifyContent: "center" }}
             name="userid"
-            rules={[{ required: true, message: "Please input your userid!" }]}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(rule, value) {
+                  //根据name来取值
+                  if (value) {
+                    _this.setState({
+                      code_button_disabled: false,
+                    });
+                    return Promise.resolve();
+                  }
+
+                  return Promise.reject("邮箱格式不正确");
+                },
+              }),
+            ]}
           >
             <Row>
               <Input
                 prefix={<UserOutlined />}
+                value={userid}
                 placeholder="userid"
-                value={this.state.userid}
                 onChange={this.inputUserid}
               ></Input>
             </Row>
@@ -125,39 +209,60 @@ class Login extends Component<LoginProps, LoginStateProps> {
           <Form.Item
             style={{ justifyContent: "center" }}
             name="password"
-            rules={[{ required: true, message: "Please input your userid !" }]}
+            rules={[
+              { required: true, message: "密码不能为空" },
+              { min: 6, message: "密码不能小于6位" },
+              { max: 20, message: "密码不能大于6位" },
+            ]}
           >
             <Row>
               <Input.Password
                 prefix={<LockOutlined />}
                 placeholder="password"
-                value={this.state.psd}
-                onChange={this.inputPwd}
               ></Input.Password>
             </Row>
           </Form.Item>
           <Form.Item
             style={{ justifyContent: "center" }}
             name="code"
-            rules={[{ required: true, message: "请输入验证码" }]}
+            rules={[
+              { required: true, message: "请输入验证码" },
+              { len: 6, message: "请输入6位验证码" },
+              // ({ getFieldValue }) => ({
+              //   validator(rule, value) {
+              //     //根据name来取值
+              //     if (!value || getFieldValue("code") === value) {
+              //       return Promise.resolve();
+              //     }
+
+              //     return Promise.reject("验证码错误");
+              //   },
+              // }),
+            ]}
           >
             <Row gutter={13}>
               <Col span={16}>
-                <Input
-                  placeholder="验证码"
-                  value={this.state.psd}
-                  onChange={this.getCode}
-                ></Input>
+                <Input placeholder="验证码"></Input>
               </Col>
               <Col span={8}>
-                <Button type="danger" block>
-                  获取验证码
+                <Button
+                  type="danger"
+                  onClick={this.getCode}
+                  block
+                  disabled={code_button_disabled}
+                  icon={<PoweroffOutlined />}
+                  loading={code_button_loading}
+                >
+                  {/**这里使用了Button组件的disable属性， 对于div没有disable属性
+                   * 需要一个flag控制频繁请求
+                   */}
+                  {code_button_text}
                 </Button>
               </Col>
             </Row>
           </Form.Item>
           <Form.Item style={{ justifyContent: "center" }}>
-            <Button type="primary" onClick={this.login} block>
+            <Button type="primary" htmlType="submit" block>
               Submit
             </Button>
           </Form.Item>

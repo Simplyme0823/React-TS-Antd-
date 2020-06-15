@@ -1,29 +1,26 @@
 import React, { Component, ChangeEvent, KeyboardEvent } from "react";
 import { RouteComponentProps, withRouter, Redirect } from "react-router-dom";
-import { Form, Input, Button, Row, Col, message } from "antd";
+import { Form, Input, Button, Row, Col } from "antd";
 import { FormInstance } from "antd/lib/form";
-import {
-  UserOutlined,
-  LockOutlined,
-  PoweroffOutlined,
-} from "@ant-design/icons";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { noop } from "../../common/util/tool";
 import { mapDispatchToProps } from "../../actions/users";
-
 import { connect } from "react-redux";
 import { usersActionState } from "../../reducers/users";
 import { combinedState } from "../../reducers";
-import { GetCode } from "../../api/account";
-
+import Code from "../Code/Code";
+const Crypto = require("crypto-js");
 /**
  * 接口继承，类继承，基类，静态方法，范型，private，protect，this，重载/重写，多态
  */
 export interface LoginStateProps {
-  userid: number | undefined | string;
-  psd: string | undefined | number;
+  userid: number | string;
+  psd: string | number;
   code_button_disabled: boolean;
   code_button_loading: boolean;
   code_button_text: string;
+  module: string;
+  code: string | number;
 }
 
 /*interface LoginProps extends RouteComponentProps, usersActionState {
@@ -62,12 +59,13 @@ class Login extends Component<LoginProps, LoginStateProps> {
       code_button_disabled: false,
       code_button_loading: false,
       code_button_text: "获取验证码",
+      module: "login",
+      code: "",
     };
     /**
      * 构造函数只运行一次
      */
     this.inputUserid = this.inputUserid.bind(this);
-    this.getCode = this.getCode.bind(this);
   }
 
   form = React.createRef<FormInstance>();
@@ -85,9 +83,9 @@ class Login extends Component<LoginProps, LoginStateProps> {
   }
 
   login() {
-    const { userid } = this.state;
-
-    this.props.login({ userid });
+    const { userid: username, psd, code } = this.state;
+    const password = Crypto.MD5(psd).toString();
+    this.props.login({ username, password, code });
   }
 
   enter(event: KeyboardEvent) {
@@ -102,64 +100,14 @@ class Login extends Component<LoginProps, LoginStateProps> {
     this.props.login(value);
   };
 
-  /**倒计时函数 */
-  countDown = () => {
-    //定时其
-    let timer = null as any;
-    //倒计时时间
-    let sec = 60;
-    //修改状态
+  getCode = (event: ChangeEvent<HTMLInputElement>) => {
     this.setState({
-      code_button_loading: false,
-      code_button_disabled: true,
-      code_button_text: `${sec}S`,
+      code: event.target.value,
     });
-    // setIntervale\clearInterval 不间断定时器
-    //setTimeOut\clearTimeout 只执行一次
-    timer = setInterval(() => {
-      if (sec-- === 0) {
-        clearInterval(timer);
-        return false;
-      }
-      this.setState({
-        code_button_text: `${sec}S`,
-      });
-    }, 1000);
   };
-  //获取验证码
-  getCode() {
-    if (!this.state.userid) {
-      message.error("请输入用户名");
-      return;
-    }
-    this.setState({
-      code_button_loading: true,
-      code_button_text: "发送中",
-    });
-    const requestData = {
-      username: this.state.userid,
-      module: "login",
-    };
 
-    GetCode(requestData)
-      .then((res) => {
-        //倒计时函数
-        this.countDown();
-      })
-      .catch((err) => {
-        this.setState({
-          code_button_loading: false,
-          code_button_text: "重新获取",
-        });
-      });
-  }
   render() {
-    const {
-      userid,
-      code_button_disabled,
-      code_button_loading,
-      code_button_text,
-    } = this.state;
+    const { userid } = this.state;
     const _this = this;
     return this.props.isLogin ? (
       <Redirect to="/admin/clicklisten" />
@@ -226,8 +174,7 @@ class Login extends Component<LoginProps, LoginStateProps> {
             style={{ justifyContent: "center" }}
             name="code"
             rules={[
-              { required: true, message: "请输入验证码" },
-              { len: 6, message: "请输入6位验证码" },
+              { required: true, message: "请输入6位数验证码", len: 6 },
               // ({ getFieldValue }) => ({
               //   validator(rule, value) {
               //     //根据name来取值
@@ -242,22 +189,17 @@ class Login extends Component<LoginProps, LoginStateProps> {
           >
             <Row gutter={13}>
               <Col span={16}>
-                <Input placeholder="验证码"></Input>
+                <Input
+                  placeholder="验证码"
+                  value={this.state.code}
+                  onChange={this.getCode}
+                ></Input>
               </Col>
               <Col span={8}>
-                <Button
-                  type="danger"
-                  onClick={this.getCode}
-                  block
-                  disabled={code_button_disabled}
-                  icon={<PoweroffOutlined />}
-                  loading={code_button_loading}
-                >
-                  {/**这里使用了Button组件的disable属性， 对于div没有disable属性
-                   * 需要一个flag控制频繁请求
-                   */}
-                  {code_button_text}
-                </Button>
+                <Code
+                  userid={this.state.userid}
+                  module={this.state.module}
+                ></Code>
               </Col>
             </Row>
           </Form.Item>

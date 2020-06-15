@@ -17,3 +17,12 @@ export function GetCode(data) {
     //params: data//get
   });
 }
+
+export function Register_(data) {
+  return instance.request({
+    url: "/register/",
+    method: "post",
+    data,
+    //params: data//get
+  });
+}

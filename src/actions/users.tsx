@@ -28,7 +28,10 @@ export const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(startLogin());
     loginSys(payload)
       .then((res) => {
-        dispatch(loginSuccess(res));
+        const data = res.data;
+        if (data.resCode === 0) {
+          dispatch(loginSuccess(res));
+        }
       })
       .catch((err: any) => {
         console.log(err);

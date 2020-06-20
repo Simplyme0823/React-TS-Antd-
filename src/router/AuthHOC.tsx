@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { RouteComponentProps, Route, Redirect, withRouter } from 'react-router-dom';
 import { RouterConfigModel } from './index'
-
+import {getToken} from "../utils/session"
 //高阶组件，外部会传入配置好的路由信息 每次跳转都会进行权限判断
 interface AuthHocProps extends RouteComponentProps {
     routerConfigMap: RouterConfigModel[]
@@ -23,7 +23,7 @@ const getRoute = (route: RouterConfigModel[], val: string) => {
     }
 }
 
-class AuthHOC extends Component<AuthHocProps> {
+class Auth extends Component<AuthHocProps> {
     render() {
         const { location, routerConfigMap } = this.props
 
@@ -31,7 +31,7 @@ class AuthHOC extends Component<AuthHocProps> {
         const { pathname } = location
 
         //从sessionStorage中读取登录信息
-        const isLogin = !!sessionStorage.getItem('isLogin')
+        const isLogin = !!getToken()
 
         let routePath = pathname
 
@@ -64,7 +64,6 @@ class AuthHOC extends Component<AuthHocProps> {
         if (isLogin) {
             //路由合法就返回路由
             if (targetRouterConfig) {
-
                 return <Route path={routePath} component={targetRouterConfig.component} ></Route>
             } else {
                 /**
@@ -82,4 +81,4 @@ class AuthHOC extends Component<AuthHocProps> {
         }
     }
 }
-export default withRouter(AuthHOC)
+export default withRouter(Auth)

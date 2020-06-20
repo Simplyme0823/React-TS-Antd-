@@ -1,6 +1,8 @@
 import { actionTypes } from "./index";
 import { Dispatch } from "redux";
 import { loginSys } from "../api/account";
+import {setToken} from "../utils/session"
+import { push } from "connected-react-router";
 
 const startLogin = () => {
   return {
@@ -9,7 +11,7 @@ const startLogin = () => {
 };
 
 const loginSuccess = (payload: any) => {
-  sessionStorage.setItem("isLogin", "true");
+  setToken("admin")
   return {
     type: actionTypes.LOGIN_SUCCESS,
     payload,
@@ -28,10 +30,12 @@ export const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(startLogin());
     loginSys(payload)
       .then((res) => {
-        const data = res.data;
-        if (data.resCode === 0) {
-          dispatch(loginSuccess(res));
-        }
+        // const data = res.data;
+        // if (data.resCode === 0) {
+        //   dispatch(loginSuccess(res));
+        // }
+        dispatch(loginSuccess(res))
+        dispatch(push("/admin/clicklisten"))
       })
       .catch((err: any) => {
         console.log(err);

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Switch, Route } from "react-router-dom";
 import { routerConfigMap } from "./router";
-import AuthHOC from "./router/AuthHOC";
+import Auth from "./router/AuthHOC";
 import { Frame, Login, NotFounding } from "./components";
 import "./App.css";
 import { Router } from "../src/reducers/index";
@@ -22,7 +22,7 @@ export default class App extends Component {
             ) : (
               <Frame menus={menus}>
                 <Switch>
-                  <AuthHOC routerConfigMap={routerConfigMap}></AuthHOC>
+                  <Auth routerConfigMap={routerConfigMap}></Auth>
                 </Switch>
               </Frame>
             )

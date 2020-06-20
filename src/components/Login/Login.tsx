@@ -1,5 +1,5 @@
 import React, { Component, ChangeEvent, KeyboardEvent } from "react";
-import { RouteComponentProps, withRouter, Redirect } from "react-router-dom";
+import { RouteComponentProps, withRouter} from "react-router-dom";
 import { Form, Input, Button, Row, Col } from "antd";
 import { FormInstance } from "antd/lib/form";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
@@ -88,7 +88,8 @@ class Login extends Component<LoginProps, LoginStateProps> {
     this.props.login({ username, password, code });
   }
 
-  enter(event: KeyboardEvent) {
+  //this绑定问题
+  enter = (event: KeyboardEvent) => {
     event.keyCode === 13 ? this.login() : noop();
   }
 
@@ -97,7 +98,7 @@ class Login extends Component<LoginProps, LoginStateProps> {
   };
 
   onFinish = (value: any) => {
-    this.props.login(value);
+    this.login()
   };
 
   getCode = (event: ChangeEvent<HTMLInputElement>) => {
@@ -109,9 +110,7 @@ class Login extends Component<LoginProps, LoginStateProps> {
   render() {
     const { userid } = this.state;
     const _this = this;
-    return this.props.isLogin ? (
-      <Redirect to="/admin/clicklisten" />
-    ) : (
+    return  (
       <>
         <Row>
           <Col span={12} offset={6}>

@@ -1,3 +1,5 @@
+/** @format */
+
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
 module.exports = function (app) {
@@ -11,10 +13,10 @@ module.exports = function (app) {
       target: process.env.REACT_APP_BASE_URL,
       changeOrigin: true,
       pathRewrite: {
-        // "^/devApi": "",
+        "^/devApi": "",
         [`^${process.env.REACT_APP_API}`]: "",
       },
-    })
+    }),
   );
   //   app.use(
   //     proxy("/manager/api", {

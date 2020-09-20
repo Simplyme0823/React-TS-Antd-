@@ -1,5 +1,7 @@
+/** @format */
+
 import React, { Component, ChangeEvent, KeyboardEvent } from "react";
-import { RouteComponentProps, withRouter} from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { Form, Input, Button, Row, Col } from "antd";
 import { FormInstance } from "antd/lib/form";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
@@ -9,7 +11,7 @@ import { connect } from "react-redux";
 import { usersActionState } from "../../reducers/users";
 import { combinedState } from "../../reducers";
 import Code from "../Code/Code";
-const Crypto = require("crypto-js");
+// const Crypto = require("crypto-js");
 /**
  * 接口继承，类继承，基类，静态方法，范型，private，protect，this，重载/重写，多态
  */
@@ -84,21 +86,23 @@ class Login extends Component<LoginProps, LoginStateProps> {
 
   login() {
     const { userid: username, psd, code } = this.state;
-    const password = Crypto.MD5(psd).toString();
+
+    const password = "a125f852854bff5d6d876183b1a2562c";
+    console.log(psd);
     this.props.login({ username, password, code });
   }
 
   //this绑定问题
   enter = (event: KeyboardEvent) => {
     event.keyCode === 13 ? this.login() : noop();
-  }
+  };
 
   toggleForm = () => {
     this.props.switchForm("register");
   };
 
   onFinish = (value: any) => {
-    this.login()
+    this.login();
   };
 
   getCode = (event: ChangeEvent<HTMLInputElement>) => {
@@ -110,7 +114,7 @@ class Login extends Component<LoginProps, LoginStateProps> {
   render() {
     const { userid } = this.state;
     const _this = this;
-    return  (
+    return (
       <>
         <Row>
           <Col span={12} offset={6}>

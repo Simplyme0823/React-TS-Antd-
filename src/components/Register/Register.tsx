@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { Component, ChangeEvent, KeyboardEvent } from "react";
 import { RouteComponentProps, withRouter, Redirect } from "react-router-dom";
 import { Form, Input, Button, Row, Col, message } from "antd";
@@ -115,15 +117,16 @@ class Register extends Component<RegisterProps, RegisterState> {
       password: Crypto.MD5(this.state.psd).toString(),
       code: this.state.code,
     };
+    console.log(data.password);
     Register_(data)
-      .then((res) => {
+      .then(res => {
         const data = res.data;
         message.success(data.message);
         if (data.resCode === 0) {
           this.toggleForm();
         }
       })
-      .then((err) => {});
+      .then(err => {});
   };
 
   render() {
@@ -236,5 +239,5 @@ class Register extends Component<RegisterProps, RegisterState> {
  * mapStatetoProps 是把redux内部总
  */
 export default withRouter(
-  connect(mapStatetoProps, mapDispatchToProps)(Register)
+  connect(mapStatetoProps, mapDispatchToProps)(Register),
 );

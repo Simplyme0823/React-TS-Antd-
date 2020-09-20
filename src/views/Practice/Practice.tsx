@@ -1,11 +1,9 @@
-import React, { Component } from 'react'
+/** @format */
+
+import React, { Component } from "react";
 
 export default class Practice extends Component {
-    render() {
-        return (
-            <>
-            practice  
-            </>
-        )
-    }
+  render() {
+    return <></>;
+  }
 }

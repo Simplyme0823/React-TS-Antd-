@@ -2,10 +2,11 @@
 
 import React, { Component, ReactText } from "react";
 
-import { Form, Input, Button, Table, Switch, message } from "antd";
+import { Form, Input, Button, Table, Switch, message, Modal } from "antd";
 
-import { GetList, Delete } from "../.././../api/department";
+import { GetList, Delete, SwitchStatus } from "../.././../api/department";
 
+import { Link } from "react-router-dom";
 export declare type StoreValue = any;
 export interface Store {
   [name: string]: StoreValue;
@@ -19,6 +20,10 @@ export type thisState = {
   // 复选框数据
   selectedRowData: any[];
   keyWords: string;
+  visible: boolean;
+  id: string;
+  confirmLoading: boolean;
+  flag: boolean;
 };
 
 type requestDataFormat = {
@@ -26,17 +31,24 @@ type requestDataFormat = {
   pageSize: number;
   name?: string;
 };
+
 type rowDataFormat = {
   status: string;
+  id: string;
 };
+
 export default class Department extends Component<any, thisState> {
   constructor(props: any) {
     super(props);
     this.state = {
+      id: "",
+      visible: false,
       pageNumber: 1,
       pageSize: 10,
       keyWords: "",
       selectedRowData: [],
+      confirmLoading: false,
+      flag: false, // 除了组建自身的loading 也可以用flag来判断
       columns: [
         {
           title: "禁启用",
@@ -48,6 +60,8 @@ export default class Department extends Component<any, thisState> {
                 checkedChildren="开启"
                 unCheckedChildren="关闭"
                 defaultChecked={rowData.status === "1" ? true : false}
+                onChange={() => this.changeSwitch(rowData)}
+                loading={rowData.id === this.state.id}
               ></Switch>
             );
           },
@@ -70,7 +84,19 @@ export default class Department extends Component<any, thisState> {
           render: (_: any, rowData: any) => {
             return (
               <div className="inline-button">
-                <Button type="primary">编辑</Button>
+                <Button
+                  type="primary"
+                  onClick={() => this.onHanderEdit(rowData.id)}
+                >
+                  <Link
+                    to={{
+                      pathname: "/practice/form",
+                      state: { id: rowData.id },
+                    }}
+                  >
+                    编辑
+                  </Link>
+                </Button>
                 <Button
                   type="danger"
                   onClick={() => this.onHandlerDelete(rowData.id)}
@@ -85,15 +111,31 @@ export default class Department extends Component<any, thisState> {
       data: [],
     };
   }
+  onHanderEdit = async (id: string) => {};
 
   onHandlerDelete = async (id: string) => {
-    const res = await Delete({ id });
-    if (res.data.resCode === 0) {
-      message.info(res.data.message);
-      this.loadData();
-    }
+    this.setState({
+      visible: true,
+      id,
+    });
   };
-
+  changeSwitch = async (rowData: rowDataFormat) => {
+    this.setState({
+      id: rowData.id,
+    });
+    const requestData = {
+      id: rowData.id,
+      status: rowData.status === "1" ? false : true,
+    };
+    const res = await SwitchStatus(requestData);
+    if (res.data.resCode === 0) {
+      this.loadData();
+      message.info(res.data.message);
+    }
+    this.setState({
+      id: "",
+    });
+  };
   onFinish = (value: Store) => {
     this.setState({
       keyWords: value.username,
@@ -116,14 +158,34 @@ export default class Department extends Component<any, thisState> {
       requestData = { ...requestData, name: this.state.keyWords };
     }
     const res = await GetList(requestData);
-    console.log(res.data.data.data);
     this.setState({ data: res.data.data.data });
+    console.log(res.data.data.data);
   };
 
   /**复选框 */
   onCheckbox = (selectedRowKeys: ReactText[]) => {
     console.log(selectedRowKeys);
     this.setState({ selectedRowData: selectedRowKeys });
+  };
+
+  hideModal = () => {
+    this.setState({
+      visible: !this.state.visible,
+    });
+  };
+  confirmDel = async () => {
+    this.setState({
+      confirmLoading: true,
+    });
+    const res = await Delete({ id: this.state.id });
+    if (res.data.resCode === 0) {
+      message.info(res.data.message);
+      this.loadData();
+      this.setState({
+        visible: false,
+        confirmLoading: false,
+      });
+    }
   };
   render() {
     const { columns, data } = this.state;
@@ -155,6 +217,20 @@ export default class Department extends Component<any, thisState> {
             rowSelection={rowSelection}
           ></Table>
         </div>
+        <Modal
+          title="提示"
+          visible={this.state.visible}
+          onOk={this.confirmDel}
+          onCancel={this.hideModal}
+          okText="确认"
+          cancelText="取消"
+          confirmLoading={this.state.confirmLoading}
+        >
+          <p className="text-center">
+            确定删除此信息？
+            <strong className="color-red">删除后将无法恢复。</strong>
+          </p>
+        </Modal>
       </div>
     );
   }

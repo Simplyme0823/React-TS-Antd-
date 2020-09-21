@@ -4,7 +4,8 @@ import React, { Component } from "react";
 
 import { Form, Input, Button, InputNumber, Radio, message } from "antd";
 import { FormInstance } from "antd/lib/form";
-import { departmentAddApi } from "../../../api/department";
+import { departmentAddApi, Detailed, Edit } from "../../../api/department";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 const formItemLayout = {
   labelCol: { span: 2 },
   wrapperCol: { span: 20 },
@@ -21,11 +22,13 @@ export type thisState = {
   number: number;
   status: boolean;
   loading: boolean;
+  id: string;
 };
 
-export default class Department extends Component<any, thisState> {
+type DepratmentProps = RouteComponentProps;
+class Department extends Component<DepratmentProps, thisState> {
   formRef = React.createRef<FormInstance>();
-  constructor(props: any) {
+  constructor(props: DepratmentProps) {
     super(props);
     this.state = {
       name: "fdsaf",
@@ -33,6 +36,7 @@ export default class Department extends Component<any, thisState> {
       number: 10,
       status: false,
       loading: false,
+      id: "",
     };
   }
 
@@ -53,6 +57,30 @@ export default class Department extends Component<any, thisState> {
     this.setState({
       loading: true,
     });
+    const state = this.props.location.state as { id: string };
+    state.id ? await this.onEdit(values) : this.onAdd(values);
+  };
+
+  componentDidMount() {
+    if (this.props.location.state) {
+      const state = this.props.location.state as { id: string };
+      this.setState({
+        id: state.id,
+      });
+      this.getDetailed();
+    }
+  }
+
+  getDetailed = async () => {
+    if (!this.props.history.location.state) return;
+    const state = this.props.location.state as { id: string };
+    const res = await Detailed({ id: state.id });
+    console.log(res.data.data);
+    this.formRef.current?.setFieldsValue(res.data.data);
+  };
+
+  /** 添加信息 */
+  onAdd = async (values: Store) => {
     const res = (await departmentAddApi(values)).data;
     const { resCode, message: Message } = res;
     this.setState({
@@ -63,7 +91,14 @@ export default class Department extends Component<any, thisState> {
       this.formRef.current?.resetFields();
     }
   };
-
+  /** 编辑信息 */
+  onEdit = async (values: Store) => {
+    const res = await Edit({ ...values, id: this.state.id });
+    const { resCode, message: resMessage } = res.data;
+    if (resCode === 0) {
+      message.info(resMessage);
+    }
+  };
   render() {
     return (
       <Form
@@ -101,3 +136,5 @@ export default class Department extends Component<any, thisState> {
     );
   }
 }
+
+export default withRouter(Department);

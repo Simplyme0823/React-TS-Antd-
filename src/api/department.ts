@@ -20,9 +20,32 @@ export function GetList(data: Store) {
 }
 
 export function Delete(data: Store) {
-  console.log(data);
   return instance({
     url: "/department/delete/",
+    method: "post",
+    data,
+  });
+}
+
+export function SwitchStatus(data: Store) {
+  return instance({
+    url: "/department/status/",
+    method: "post",
+    data,
+  });
+}
+
+export function Detailed(data: Store) {
+  return instance({
+    url: "/department/detailed/",
+    method: "post",
+    data,
+  });
+}
+
+export function Edit(data: Store) {
+  return instance({
+    url: "/department/edit/",
     method: "post",
     data,
   });
